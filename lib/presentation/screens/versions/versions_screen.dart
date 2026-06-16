@@ -57,7 +57,11 @@ class VersionsScreen extends ConsumerWidget {
             return RefreshIndicator(
               onRefresh: () async {
                 ref.invalidate(versionsProvider);
-                await ref.read(versionsProvider.future);
+                try {
+                  await ref.read(versionsProvider.future);
+                } catch (_) {
+                  // Error surfaced via provider's AsyncValue → ErrorView.
+                }
               },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),

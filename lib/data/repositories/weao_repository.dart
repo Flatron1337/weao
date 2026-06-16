@@ -1,4 +1,5 @@
 import '../../core/api/weao_api_client.dart';
+import '../../core/utils/app_logger.dart';
 import '../local/local_storage_service.dart';
 import '../models/cached_result.dart';
 import '../models/exploit.dart';
@@ -15,10 +16,7 @@ class WeaoRepository {
 
   Future<CachedResult<List<Exploit>>> getExploits() async {
     try {
-      final data = await _client.get('/api/status/exploits');
-      if (data is! List) {
-        return CachedResult(data: []);
-      }
+      final data = await _client.getJsonList('/api/status/exploits');
       await _storage.saveJsonCache(_exploitsCacheFile, data);
       return CachedResult(
         data: _parseExploits(data),
@@ -39,12 +37,34 @@ class WeaoRepository {
     }
   }
 
-  Future<Exploit> getExploit(String name) async {
-    final data = await _client.get('/api/status/exploits/$name');
-    if (data is! Map) {
-      throw Exception('Invalid response');
+  /// Fetches a single exploit by name. Falls back to the per-exploit cache on
+  /// error, returning a [CachedResult] flagged as stale so the detail screen
+  /// can still render offline data (consistent with the other endpoints).
+  Future<CachedResult<Exploit>> getExploit(String name) async {
+    final cacheFile = 'exploit_$name.json';
+    try {
+      final data =
+          await _client.getJsonObject('/api/status/exploits/$name');
+      await _storage.saveJsonCache(cacheFile, data);
+      return CachedResult(
+        data: Exploit.fromJson(data),
+        isStale: false,
+        cachedAt: DateTime.now(),
+      );
+    } catch (e) {
+      final cached = await _storage.loadJsonCache(cacheFile);
+      if (cached != null && cached.data is Map) {
+        return CachedResult(
+          data: Exploit.fromJson(
+            Map<String, dynamic>.from(cached.data as Map),
+          ),
+          isStale: true,
+          cachedAt: cached.cachedAt,
+          error: e,
+        );
+      }
+      rethrow;
     }
-    return Exploit.fromJson(Map<String, dynamic>.from(data));
   }
 
   Future<CachedResult<RobloxVersions>> getCurrentVersions() {
@@ -65,17 +85,13 @@ class WeaoRepository {
   }) async {
     final cacheFile = 'sunc_$scrap.json';
     try {
-      final data = await _client.get(
+      final data = await _client.getJsonObject(
         '/api/sunc',
         queryParameters: {'scrap': scrap, 'key': key},
       );
-      if (data is! Map) {
-        throw Exception('Invalid sUNC response');
-      }
-      final map = Map<String, dynamic>.from(data);
-      await _storage.saveJsonCache(cacheFile, map);
+      await _storage.saveJsonCache(cacheFile, data);
       return CachedResult(
-        data: SuncData.fromJson(map),
+        data: SuncData.fromJson(data),
         isStale: false,
         cachedAt: DateTime.now(),
       );
@@ -101,14 +117,10 @@ class WeaoRepository {
   ) async {
     final cacheFile = 'versions_$channel.json';
     try {
-      final data = await _client.get(path);
-      if (data is! Map) {
-        return CachedResult(data: const RobloxVersions(platforms: []));
-      }
-      final map = Map<String, dynamic>.from(data);
-      await _storage.saveJsonCache(cacheFile, map);
+      final data = await _client.getJsonObject(path);
+      await _storage.saveJsonCache(cacheFile, data);
       return CachedResult(
-        data: RobloxVersions.fromJson(map),
+        data: RobloxVersions.fromJson(data),
         isStale: false,
         cachedAt: DateTime.now(),
       );
@@ -129,9 +141,17 @@ class WeaoRepository {
   }
 
   List<Exploit> _parseExploits(List<dynamic> data) {
-    return data
-        .whereType<Map>()
-        .map((item) => Exploit.fromJson(Map<String, dynamic>.from(item)))
+    final parsed = <Exploit>[];
+    for (final item in data) {
+      if (item is! Map) continue;
+      try {
+        parsed.add(Exploit.fromJson(Map<String, dynamic>.from(item)));
+      } catch (e, st) {
+        // Skip malformed entries instead of failing the whole list.
+        AppLogger.warning('Failed to parse exploit entry', error: e, stackTrace: st);
+      }
+    }
+    return parsed
         .where((e) => !e.hidden)
         .toList()
       ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));

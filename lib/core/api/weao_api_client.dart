@@ -1,22 +1,66 @@
 import 'package:dio/dio.dart';
 
 import '../errors/weao_exception.dart';
+import '../l10n/app_strings.dart';
+import '../utils/app_logger.dart';
+
+/// Base URL of the WEAO API. Override at build time with
+/// `--dart-define=WEAO_API_BASE_URL=https://...`.
+const _apiBaseUrl =
+    String.fromEnvironment('WEAO_API_BASE_URL', defaultValue: 'https://weao.xyz');
+
+/// User-Agent sent to the WEAO API. Override at build time with
+/// `--dart-define=WEAO_USER_AGENT=...`.
+const _apiUserAgent =
+    String.fromEnvironment('WEAO_USER_AGENT', defaultValue: 'WEAO-3PService');
 
 class WeaoApiClient {
   WeaoApiClient({Dio? dio})
       : _dio = dio ??
             Dio(
               BaseOptions(
-                baseUrl: 'https://weao.xyz',
+                baseUrl: _apiBaseUrl,
                 connectTimeout: const Duration(seconds: 15),
                 receiveTimeout: const Duration(seconds: 15),
-                headers: const {'User-Agent': 'WEAO-3PService'},
+                headers: const {'User-Agent': _apiUserAgent},
               ),
             );
 
   final Dio _dio;
 
-  Future<dynamic> get(
+  /// GET that returns the response body as a JSON object.
+  Future<Map<String, dynamic>> getJsonObject(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final data = await getRaw(path, queryParameters: queryParameters);
+    if (data is! Map<String, dynamic>) {
+      throw WeaoException(
+        'Invalid response: expected JSON object',
+        kind: WeaoExceptionKind.unknown,
+      );
+    }
+    return data;
+  }
+
+  /// GET that returns the response body as a JSON array.
+  Future<List<dynamic>> getJsonList(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) async {
+    final data = await getRaw(path, queryParameters: queryParameters);
+    if (data is! List) {
+      throw WeaoException(
+        'Invalid response: expected JSON array',
+        kind: WeaoExceptionKind.unknown,
+      );
+    }
+    return data;
+  }
+
+  /// Low-level GET returning the decoded body as-is. Prefer [getJsonObject]
+  /// and [getJsonList] in call sites so types are checked centrally.
+  Future<dynamic> getRaw(
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
@@ -26,7 +70,9 @@ class WeaoApiClient {
         queryParameters: queryParameters,
       );
       return response.data;
-    } on DioException catch (e) {
+    } on DioException catch (e, st) {
+      AppLogger.warning('Dio request failed: ${e.requestOptions.path}',
+          error: e, stackTrace: st);
       throw _mapException(e);
     }
   }
@@ -41,22 +87,35 @@ class WeaoApiClient {
         final remaining = rateLimitInfo['remainingTime'];
         final seconds = remaining is num ? remaining.ceil() : 60;
         return WeaoException(
-          'Слишком много запросов. Повторите через $seconds сек.',
+          AppStrings.rateLimitMessage(seconds),
+          kind: WeaoExceptionKind.rateLimited,
           remainingSeconds: seconds,
         );
       }
-      return WeaoException('Слишком много запросов. Повторите позже.');
+      return WeaoException(
+        AppStrings.rateLimitGeneric,
+        kind: WeaoExceptionKind.rateLimited,
+      );
     }
 
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
-      return WeaoException('Превышено время ожидания ответа');
+      return WeaoException(
+        AppStrings.timeoutError,
+        kind: WeaoExceptionKind.timeout,
+      );
     }
 
     if (e.type == DioExceptionType.connectionError) {
-      return WeaoException('Нет подключения к интернету');
+      return WeaoException(
+        AppStrings.noConnection,
+        kind: WeaoExceptionKind.noConnection,
+      );
     }
 
-    return WeaoException('Не удалось загрузить данные');
+    return WeaoException(
+      AppStrings.genericError,
+      kind: WeaoExceptionKind.unknown,
+    );
   }
 }

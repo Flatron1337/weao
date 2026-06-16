@@ -1,3 +1,5 @@
+import '../errors/weao_exception.dart';
+
 abstract final class AppStrings {
   static const appTitle = 'WEAO';
 
@@ -71,6 +73,23 @@ abstract final class AppStrings {
 
   static String rateLimitMessage(int seconds) =>
       'Слишком много запросов. Повторите через $seconds сек.';
+  static const rateLimitGeneric = 'Слишком много запросов. Повторите позже.';
+  static const timeoutError = 'Превышено время ожидания ответа';
+  static const noConnection = 'Нет подключения к интернету';
   static const genericError = 'Не удалось загрузить данные';
   static const linkError = 'Не удалось открыть ссылку';
+
+  /// Maps an API error category to a user-facing message.
+  static String messageFor(WeaoExceptionKind kind) {
+    switch (kind) {
+      case WeaoExceptionKind.rateLimited:
+        return rateLimitGeneric;
+      case WeaoExceptionKind.timeout:
+        return timeoutError;
+      case WeaoExceptionKind.noConnection:
+        return noConnection;
+      case WeaoExceptionKind.unknown:
+        return genericError;
+    }
+  }
 }

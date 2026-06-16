@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme.dart';
+import 'data/models/exploit.dart';
 import 'presentation/screens/exploits/exploit_detail_screen.dart';
 import 'presentation/screens/exploits/exploits_screen.dart';
 import 'presentation/screens/shell/main_shell.dart';
@@ -44,7 +45,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final name = Uri.decodeComponent(state.pathParameters['name']!);
-          return ExploitDetailScreen(exploitName: name);
+          // When navigating from the list, the full Exploit is passed via
+          // `extra` so the detail screen avoids an extra network call. Deep
+          // links (no extra) fall back to fetching by name.
+          final exploit = state.extra;
+          return ExploitDetailScreen(
+            exploitName: name,
+            exploit: exploit is Exploit ? exploit : null,
+          );
         },
       ),
     ],
