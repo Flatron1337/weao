@@ -34,7 +34,7 @@ class _SuncTestsSectionState extends ConsumerState<SuncTestsSection> {
     final key = widget.keyValue;
 
     if (scrap == null || key == null || scrap.isEmpty || key.isEmpty) {
-      return _UnavailableSection();
+      return const _UnavailableSection();
     }
 
     final request = SuncRequest(scrap: scrap, key: key);
@@ -61,7 +61,7 @@ class _SuncTestsSectionState extends ConsumerState<SuncTestsSection> {
                 onRetry: () => ref.invalidate(suncDataProvider(request)),
               ),
               data: (result) {
-                if (result == null) return _UnavailableSection(compact: true);
+                if (result == null) return const _UnavailableSection(compact: true);
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

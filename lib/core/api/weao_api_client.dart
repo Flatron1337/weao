@@ -37,7 +37,6 @@ class WeaoApiClient {
     if (data is! Map<String, dynamic>) {
       throw WeaoException(
         'Invalid response: expected JSON object',
-        kind: WeaoExceptionKind.unknown,
       );
     }
     return data;
@@ -52,7 +51,6 @@ class WeaoApiClient {
     if (data is! List) {
       throw WeaoException(
         'Invalid response: expected JSON array',
-        kind: WeaoExceptionKind.unknown,
       );
     }
     return data;
@@ -113,9 +111,6 @@ class WeaoApiClient {
       );
     }
 
-    return WeaoException(
-      AppStrings.genericError,
-      kind: WeaoExceptionKind.unknown,
-    );
+    return WeaoException(AppStrings.genericError);
   }
 }

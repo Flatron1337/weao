@@ -20,7 +20,6 @@ class WeaoRepository {
       await _storage.saveJsonCache(_exploitsCacheFile, data);
       return CachedResult(
         data: _parseExploits(data),
-        isStale: false,
         cachedAt: DateTime.now(),
       );
     } catch (e) {
@@ -48,7 +47,6 @@ class WeaoRepository {
       await _storage.saveJsonCache(cacheFile, data);
       return CachedResult(
         data: Exploit.fromJson(data),
-        isStale: false,
         cachedAt: DateTime.now(),
       );
     } catch (e) {
@@ -92,7 +90,6 @@ class WeaoRepository {
       await _storage.saveJsonCache(cacheFile, data);
       return CachedResult(
         data: SuncData.fromJson(data),
-        isStale: false,
         cachedAt: DateTime.now(),
       );
     } catch (e) {
@@ -121,7 +118,6 @@ class WeaoRepository {
       await _storage.saveJsonCache(cacheFile, data);
       return CachedResult(
         data: RobloxVersions.fromJson(data),
-        isStale: false,
         cachedAt: DateTime.now(),
       );
     } catch (e) {
