@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/theme/app_dimens.dart';
+
 class StatusChip extends StatelessWidget {
   const StatusChip({
     super.key,
@@ -15,23 +17,26 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimens.chipPaddingH,
+        vertical: AppDimens.chipPaddingV,
+      ),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(AppDimens.chipRadius),
         border: Border.all(color: color.withValues(alpha: 0.4)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (icon != null) ...[
-            Icon(icon, size: 12, color: color),
-            const SizedBox(width: 4),
+            Icon(icon, size: AppDimens.chipIconSize, color: color),
+            const SizedBox(width: AppDimens.spacingSm),
           ],
           Text(
             label,
             style: TextStyle(
-              fontSize: 11,
+              fontSize: AppDimens.chipFontSize,
               fontWeight: FontWeight.w600,
               color: color,
             ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/l10n/app_strings.dart';
+import '../../core/theme/app_dimens.dart';
 
 class VersionPlatformCard extends StatelessWidget {
   const VersionPlatformCard({
@@ -14,55 +15,44 @@ class VersionPlatformCard extends StatelessWidget {
   final String version;
   final String date;
 
-  IconData get _platformIcon {
-    switch (platform) {
-      case AppStrings.windows:
-        return Icons.desktop_windows_outlined;
-      case AppStrings.mac:
-        return Icons.laptop_mac_outlined;
-      case AppStrings.android:
-        return Icons.android_outlined;
-      case AppStrings.ios:
-        return Icons.phone_iphone_outlined;
-      default:
-        return Icons.devices_outlined;
-    }
-  }
-
-  String get _platformLabel {
-    switch (platform) {
+  /// Single source of truth for platform icon and localized label.
+  static ({IconData icon, String label}) _platformMeta(String key) {
+    switch (key) {
       case 'Windows':
-        return AppStrings.windows;
+        return (icon: Icons.desktop_windows_outlined, label: AppStrings.windows);
       case 'Mac':
-        return AppStrings.mac;
+        return (icon: Icons.laptop_mac_outlined, label: AppStrings.mac);
       case 'Android':
-        return AppStrings.android;
+        return (icon: Icons.android_outlined, label: AppStrings.android);
       case 'iOS':
-        return AppStrings.ios;
+        return (icon: Icons.phone_iphone_outlined, label: AppStrings.ios);
       default:
-        return platform;
+        return (icon: Icons.devices_outlined, label: key);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final meta = _platformMeta(platform);
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppDimens.cardMarginHorizontal,
+        vertical: AppDimens.cardMarginVertical,
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppDimens.cardPadding),
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: AppDimens.platformIconSize,
+              height: AppDimens.platformIconSize,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(10),
+                color: primaryColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(AppDimens.platformIconRadius),
               ),
-              child: Icon(
-                _platformIcon,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              child: Icon(meta.icon, color: primaryColor),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -70,19 +60,19 @@ class VersionPlatformCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _platformLabel,
+                    meta.label,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: AppDimens.spacingSm),
                   Text(
                     version,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontFamily: 'monospace',
                         ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: AppDimens.spacingXs),
                   Text(
                     date,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(

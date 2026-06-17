@@ -241,33 +241,60 @@ class _TestsList extends StatelessWidget {
     return Column(
       children: [
         for (final library in libraries)
-          ExpansionTile(
-            title: Text(library),
-            subtitle: Text('${grouped[library]!.length}'),
-            children: [
-              for (final test in grouped[library]!)
-                ListTile(
-                  dense: true,
-                  leading: Icon(
-                    test.isPassed ? Icons.check_circle : Icons.cancel,
-                    color: test.isPassed ? Colors.green : Colors.red,
-                    size: 18,
-                  ),
-                  title: Text(test.name),
-                  subtitle: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (test.description.isNotEmpty) Text(test.description),
-                      if (test.reason != null && test.reason!.isNotEmpty)
-                        Text(
-                          '${AppStrings.suncReason}: ${test.reason}',
-                          style: TextStyle(color: Colors.red.shade200),
-                        ),
-                    ],
-                  ),
-                ),
-            ],
+          _LibraryExpansionTile(
+            library: library,
+            tests: grouped[library]!,
           ),
+      ],
+    );
+  }
+}
+
+/// An ExpansionTile whose children are built lazily via a shrink-wrapped
+/// ListView.builder, so libraries with hundreds of tests don't construct the
+/// whole subtree when expanded.
+class _LibraryExpansionTile extends StatelessWidget {
+  const _LibraryExpansionTile({required this.library, required this.tests});
+
+  final String library;
+  final List<SuncTest> tests;
+
+  @override
+  Widget build(BuildContext context) {
+    return ExpansionTile(
+      title: Text(library),
+      subtitle: Text('${tests.length}'),
+      children: [
+        ListView.builder(
+          // Embeds inside the parent scrollable (the detail ListView) instead
+          // of scrolling on its own.
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: tests.length,
+          itemBuilder: (context, index) {
+            final test = tests[index];
+            return ListTile(
+              dense: true,
+              leading: Icon(
+                test.isPassed ? Icons.check_circle : Icons.cancel,
+                color: test.isPassed ? Colors.green : Colors.red,
+                size: 18,
+              ),
+              title: Text(test.name),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (test.description.isNotEmpty) Text(test.description),
+                  if (test.reason != null && test.reason!.isNotEmpty)
+                    Text(
+                      '${AppStrings.suncReason}: ${test.reason}',
+                      style: TextStyle(color: Colors.red.shade200),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       ],
     );
   }
