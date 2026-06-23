@@ -60,6 +60,20 @@ class SettingsScreen extends ConsumerWidget {
               }
             },
           ),
+          const Divider(),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+              ),
+              onPressed: () {
+                throw StateError('This is test exception');
+              },
+              child: const Text('Verify Sentry Setup'),
+            ),
+          ),
         ],
       ),
     );
