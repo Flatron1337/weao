@@ -16,6 +16,11 @@ abstract final class AppStrings {
 
   static const filterAll = 'Все';
   static const filterFavorites = 'Избранное';
+  static const filterFreeOnly = 'Бесплатные';
+  static const filterUndetectedOnly = 'Без детекта';
+  static const filterWorkingOnly = 'Рабочие';
+  static const filterPlatform = 'Платформа';
+  static const filterAllPlatforms = 'Все платформы';
   static const addToFavorites = 'Добавить в избранное';
   static const removeFromFavorites = 'Убрать из избранного';
 
@@ -27,6 +32,11 @@ abstract final class AppStrings {
   static const paid = 'Платный';
   static const unc = 'UNC';
   static const sunc = 'sUNC';
+  static const sortNameAsc = 'Имя (А-Я)';
+  static const sortNameDesc = 'Имя (Я-А)';
+  static const sortUpdatedNewest = 'Новейшие';
+  static const sortUncHighest = 'Макс UNC';
+  static const sortSuncHighest = 'Макс sUNC';
 
   static const exploitDetails = 'Детали эксплойта';
   static const version = 'Версия';
