@@ -57,6 +57,7 @@ app.*.map.json
 # Windows
 Thumbs.db
 desktop.ini
+*.exe
 
 # MacOS
 .AppleDouble
@@ -65,3 +66,5 @@ desktop.ini
 # Generated code (uncomment if you don't want to commit generated files)
 # *.g.dart
 # *.freezed.dart
+
+sentry.properties

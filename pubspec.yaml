@@ -56,8 +56,9 @@ dependencies:
   flutter_svg: ^2.3.0
   hive_ce: ^2.19.3
   hive_ce_flutter: ^2.3.4
-  sentry_flutter: ^8.14.2
+  sentry_flutter: ^9.22.0
 dev_dependencies:
+  sentry_dart_plugin: ^3.4.0
   flutter_test:
     sdk: flutter
 
@@ -122,3 +123,9 @@ flutter_launcher_icons:
   ios: true
   image_path: "assets/icon.png"
   min_sdk_android: 21
+
+sentry:
+  upload_debug_symbols: true
+  upload_source_maps: true
+  project: flutter
+  org: ripped
