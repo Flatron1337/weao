@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../errors/weao_exception.dart';
@@ -32,6 +33,17 @@ class WeaoApiClient {
             ),
           ) {
     if (dio == null) {
+      _dio.interceptors.add(
+        RetryInterceptor(
+          dio: _dio,
+          logPrint: AppLogger.debug,
+          retryDelays: const [
+            Duration(seconds: 1),
+            Duration(seconds: 2),
+            Duration(seconds: 3),
+          ],
+        ),
+      );
       _dio.interceptors.add(
         PrettyDioLogger(requestHeader: true, requestBody: true),
       );

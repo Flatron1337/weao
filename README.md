@@ -6,41 +6,46 @@
 
 ## Что нового (Последние изменения)
 
+- **Офлайн-первая архитектура (Hive CE)**: Полный переход на молниеносную NoSQL базу данных `hive_ce` для хранения избранного и кеширования ответов API. Приложение работает моментально даже без интернета.
+- **Sentry.io**: Автоматический трекинг ошибок, зависаний интерфейса и сбор метрик производительности.
+- **Сетевая отказоустойчивость**: Внедрен умный механизм повторных запросов (Smart Retries) на базе `dio_smart_retry`.
+- **UI Анимации**: Интегрирован `flutter_animate` для гладких микро-анимаций интерфейса (fade-in карточек, shimmer-эффекты при загрузке).
 - **Riverpod 3.0 & Кодогенерация**: Полный переход на `@riverpod` и `riverpod_generator` для безопасного DI и управления состоянием.
 - **Freezed & JSON Serializable**: Модели данных (`Exploit`, `SuncData`, `RobloxVersions`) теперь используют `freezed` для иммутабельности и кодогенерации `fromJson`/`toJson`, исключая ошибки ручного парсинга.
-- **Локализация**: Тексты вынесены в `*.arb` файлы (папка `lib/l10n`). Добавлена поддержка английского и русского языков с возможностью переключения из настроек.
-- **Расширенные фильтры и сортировка**: Появились фильтры "Без детекта", "Только рабочие", "Бесплатные", "Платформы (Windows/Mac/Android/iOS)" и сортировка по "Макс sUNC".
-- **Dynamic Color**: Поддержка системных цветов (Material You) и ручной выбор темы (Светлая/Тёмная/Системная).
+- **CI/CD пайплайн**: Автоматический прогон линтера, тестов и сборка APK через GitHub Actions.
 
 ## Технологии
 
 - **Flutter** / **Dart** `^3.0`
 - **Riverpod 3.3** (`riverpod_annotation`, `riverpod_generator`) — управление состоянием и DI.
 - **Freezed** (`freezed_annotation`, `freezed 3.2.5`) — генерация иммутабельных классов и sealed unions.
+- **Hive CE** — сверхбыстрая NoSQL БД для хранения кеша и локальных данных.
 - **go_router 17** — декларативная навигация (`StatefulShellRoute`).
-- **Dio** — HTTP-клиент с таймаутами.
-- **shared_preferences** + файловый JSON-кеш (`path_provider`) — офлайн-фолбэк через обёртку `CachedResult<T>` (`{data, isStale, cachedAt, error}`).
+- **Dio + Smart Retry** — HTTP-клиент с таймаутами и автоматическими повторами.
+- **Sentry** — мониторинг крэшей и перфоманса.
+- **flutter_animate** — декларативные анимации UI.
 
 ## Структура проекта
 
 ```
 lib/
-├── main.dart                  # bootstrap: SharedPreferences → ProviderScope
+├── main.dart                  # bootstrap: Инициализация Sentry, Hive, DI
 ├── app.dart                   # WeaoApp (GoRouter, Тема, Локализация)
 ├── core/
-│   ├── api/                   # WeaoApiClient (Dio-обёртка)
+│   ├── api/                   # WeaoApiClient (Dio + Smart Retry + Logger)
 │   ├── errors/                # WeaoException
 │   ├── l10n/                  # Устаревшие хардкод-строки (AppStrings)
 │   └── theme/                 # AppTheme (Material 3 + dynamic_color)
 ├── data/
-│   ├── local/                 # LocalStorageService (favorites + JSON-кеш)
+│   ├── database/              # HiveService (инициализация коробок Hive CE)
+│   ├── local/                 # LocalStorageService (офлайн кеш на базе Hive)
 │   ├── models/                # Exploit, RobloxVersions, SuncData (Freezed)
 │   └── repositories/          # WeaoRepository — офлайн-фёрст логика
 ├── l10n/                      # .arb файлы для генерации AppLocalizations
 └── presentation/
     ├── providers/             # Сгенерированные Riverpod-провайдеры (@riverpod)
     ├── screens/               # shell + exploits + versions + settings
-    └── widgets/               # переиспользуемые виджеты
+    └── widgets/               # переиспользуемые виджеты (в т.ч. Shimmer)
 ```
 
 ## Запуск и разработка

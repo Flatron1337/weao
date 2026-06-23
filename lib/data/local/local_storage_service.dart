@@ -1,110 +1,97 @@
 import 'dart:convert';
-import 'dart:io';
 
-import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/utils/app_logger.dart';
+import '../../presentation/providers/exploits_provider.dart';
+import '../database/hive_models.dart';
+import '../database/hive_service.dart';
 
 class LocalStorageService {
-  LocalStorageService(this._prefs, [this._cacheDir]);
+  LocalStorageService(this._prefs);
 
-  static const _favoritesKey = 'favorite_exploit_titles';
   static const _themeKey = 'app_theme_mode';
   static const _localeKey = 'app_locale';
+  static const _filtersKey = 'exploit_filters';
 
   final SharedPreferences _prefs;
-  Directory? _cacheDir;
-
-  /// Pre-warm the cache directory. Call once during app bootstrap (e.g. in
-  /// `main()`) so subsequent [saveJsonCache]/[loadJsonCache] calls are
-  /// synchronous-ish and there's no first-access race between concurrent
-  /// repository calls.
-  Future<void> initCacheDir() async {
-    if (_cacheDir != null) return;
-    final appDir = await getApplicationDocumentsDirectory();
-    _cacheDir = Directory('${appDir.path}/cache');
-    if (!_cacheDir!.existsSync()) {
-      await _cacheDir!.create(recursive: true);
-    }
-  }
-
-  Future<Directory> get cacheDir async {
-    if (_cacheDir != null) return _cacheDir!;
-    await initCacheDir();
-    return _cacheDir!;
-  }
 
   Future<Set<String>> loadFavorites() async {
-    final raw = _prefs.getString(_favoritesKey);
-    if (raw == null) return {};
     try {
-      final list = jsonDecode(raw) as List<dynamic>;
-      return list.map((e) => e as String).toSet();
+      final box = HiveService.favorites;
+      return box.values.map((e) => e.title).toSet();
     } catch (e, st) {
-      AppLogger.warning(
-        'Failed to decode favorites, resetting',
-        error: e,
-        stackTrace: st,
-      );
+      AppLogger.warning('Failed to load favorites', error: e, stackTrace: st);
       return {};
     }
   }
 
   Future<void> saveFavorites(Set<String> titles) async {
-    final list = titles.toList()..sort();
-    await _prefs.setString(_favoritesKey, jsonEncode(list));
+    try {
+      final box = HiveService.favorites;
+      await box.clear();
+      final items = titles.map((t) => HiveFavorite(title: t)).toList();
+      await box.addAll(items);
+    } catch (e, st) {
+      AppLogger.warning('Failed to save favorites', error: e, stackTrace: st);
+    }
   }
 
   String? getThemeMode() => _prefs.getString(_themeKey);
   Future<void> setThemeMode(String mode) => _prefs.setString(_themeKey, mode);
 
   String? getLocale() => _prefs.getString(_localeKey);
-  Future<void> setLocale(String languageCode) =>
-      _prefs.setString(_localeKey, languageCode);
+  Future<void> setLocale(String languageCode) => _prefs.setString(_localeKey, languageCode);
   Future<void> clearLocale() => _prefs.remove(_localeKey);
 
+  ExploitFilters getFilters() {
+    final raw = _prefs.getString(_filtersKey);
+    if (raw == null) return const ExploitFilters();
+    try {
+      return ExploitFilters.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    } catch (_) {
+      return const ExploitFilters();
+    }
+  }
+
+  Future<void> saveFilters(ExploitFilters filters) =>
+      _prefs.setString(_filtersKey, jsonEncode(filters.toJson()));
+
   Future<void> clearAllCache() async {
-    final dir = await cacheDir;
-    if (dir.existsSync()) {
-      for (final entity in dir.listSync()) {
-        await entity.delete(recursive: true);
-      }
+    try {
+      await HiveService.cache.clear();
+    } catch (e, st) {
+      AppLogger.warning('Failed to clear cache', error: e, stackTrace: st);
     }
   }
 
   Future<void> saveJsonCache(String fileName, dynamic data) async {
-    final dir = await cacheDir;
-    final file = File('${dir.path}/$fileName');
-    final envelope = {
-      'cachedAt': DateTime.now().toUtc().toIso8601String(),
-      'data': data,
-    };
-    await file.writeAsString(jsonEncode(envelope));
+    try {
+      final box = HiveService.cache;
+      final cachedResult = HiveCachedResult(
+        path: fileName,
+        jsonBody: jsonEncode(data),
+        cachedAt: DateTime.now().toUtc(),
+      );
+      await box.put(fileName, cachedResult);
+    } catch (e, st) {
+      AppLogger.warning('Failed to save cache for "$fileName"', error: e, stackTrace: st);
+    }
   }
 
   Future<StoredCache?> loadJsonCache(String fileName) async {
-    final dir = await cacheDir;
-    final file = File('${dir.path}/$fileName');
-    if (!file.existsSync()) return null;
-
     try {
-      final decoded =
-          jsonDecode(await file.readAsString()) as Map<String, dynamic>;
-      final cachedAtRaw = decoded['cachedAt'] as String?;
-      final cachedAt = cachedAtRaw != null
-          ? DateTime.tryParse(cachedAtRaw)
-          : null;
+      final box = HiveService.cache;
+      final cached = box.get(fileName);
+      if (cached == null) return null;
+      
+      final data = jsonDecode(cached.jsonBody);
       return StoredCache(
-        data: decoded['data'],
-        cachedAt: cachedAt ?? DateTime.fromMillisecondsSinceEpoch(0),
+        data: data,
+        cachedAt: cached.cachedAt,
       );
     } catch (e, st) {
-      AppLogger.warning(
-        'Failed to read cache file "$fileName"',
-        error: e,
-        stackTrace: st,
-      );
+      AppLogger.warning('Failed to load cache for "$fileName"', error: e, stackTrace: st);
       return null;
     }
   }

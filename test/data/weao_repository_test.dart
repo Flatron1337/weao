@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:weao/core/api/weao_api_client.dart';
 import 'package:weao/core/errors/weao_exception.dart';
+import 'package:weao/data/database/hive_service.dart';
 import 'package:weao/data/local/local_storage_service.dart';
 import 'package:weao/data/repositories/weao_repository.dart';
 
@@ -32,12 +34,9 @@ class FakeWeaoApiClient extends WeaoApiClient {
 
 Future<WeaoRepository> _buildRepository(
   FakeWeaoApiClient client,
-  Directory cacheDir,
 ) async {
-  // SharedPreferences is mocked per-call; only the cache directory matters
-  // for these tests.
   final prefs = await SharedPreferences.getInstance();
-  return WeaoRepository(client, LocalStorageService(prefs, cacheDir));
+  return WeaoRepository(client, LocalStorageService(prefs));
 }
 
 void main() {
@@ -49,6 +48,7 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     tempDir = await Directory.systemTemp.createTemp('weao_repo_test_');
+    await HiveService.init(tempDir.path);
     client = FakeWeaoApiClient(
       exploitsJson: [
         const {
@@ -76,13 +76,16 @@ void main() {
         },
       ],
     );
-    repository = await _buildRepository(client, tempDir);
+    repository = await _buildRepository(client);
   });
 
   tearDown(() async {
-    if (tempDir.existsSync()) {
-      await tempDir.delete(recursive: true);
-    }
+    try {
+      await Hive.close();
+      if (tempDir.existsSync()) {
+        await tempDir.delete(recursive: true);
+      }
+    } catch (_) {}
   });
 
   group('WeaoRepository.getExploits', () {
@@ -105,7 +108,7 @@ void main() {
           const {'title': 'AlsoGood'},
         ],
       );
-      repository = await _buildRepository(client, tempDir);
+      repository = await _buildRepository(client);
 
       final result = await repository.getExploits();
 
@@ -123,7 +126,7 @@ void main() {
 
       // Now make the API throw.
       client = FakeWeaoApiClient(shouldThrow: true);
-      repository = await _buildRepository(client, tempDir);
+      repository = await _buildRepository(client);
 
       final result = await repository.getExploits();
 
@@ -136,7 +139,7 @@ void main() {
 
     test('rethrows when no cache available on error', () async {
       client = FakeWeaoApiClient(shouldThrow: true);
-      repository = await _buildRepository(client, tempDir);
+      repository = await _buildRepository(client);
 
       expect(() => repository.getExploits(), throwsA(isA<WeaoException>()));
     });

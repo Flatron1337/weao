@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/errors/weao_exception.dart';
@@ -48,11 +49,25 @@ class VersionsScreen extends ConsumerWidget {
                 .toList();
 
             if (platforms.isEmpty) {
-              return const Center(
-                child: Text(
-                  AppStrings.noVersions,
-                  style: TextStyle(color: Colors.white54),
-                ),
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.history_toggle_off,
+                      size: 64,
+                      color: Colors.white24,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppStrings.noVersions,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyLarge?.copyWith(color: Colors.white54),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ).animate().fade(duration: 400.ms).scale(begin: const Offset(0.9, 0.9)),
               );
             }
 
@@ -81,7 +96,12 @@ class VersionsScreen extends ConsumerWidget {
                     platform: platform.platform,
                     version: platform.version,
                     date: platform.date,
-                  );
+                  ).animate().fade().slideY(
+                        begin: 0.1,
+                        end: 0,
+                        duration: 300.ms,
+                        curve: Curves.easeOutQuad,
+                      );
                 },
               ),
             );

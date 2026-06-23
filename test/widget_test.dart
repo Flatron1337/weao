@@ -3,16 +3,19 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:weao/app.dart';
 import 'package:weao/core/api/weao_api_client.dart';
 import 'package:weao/core/l10n/app_strings.dart';
+import 'package:weao/data/database/hive_service.dart';
 import 'package:weao/data/local/local_storage_service.dart';
 import 'package:weao/data/models/exploit.dart';
 import 'package:weao/data/repositories/weao_repository.dart';
 import 'package:weao/presentation/providers/favorites_provider.dart';
 import 'package:weao/presentation/providers/repository_provider.dart';
+import 'package:weao/presentation/widgets/exploit_card.dart';
 
 /// A fake API client that returns canned data without any network I/O.
 class FakeWeaoApiClient extends WeaoApiClient {
@@ -72,10 +75,12 @@ void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     tempCacheDir = await Directory.systemTemp.createTemp('weao_widget_test_');
+    await HiveService.init(tempCacheDir.path);
   });
 
   tearDown(() async {
     try {
+      await Hive.close();
       if (tempCacheDir.existsSync()) {
         await tempCacheDir.delete(recursive: true);
       }
@@ -103,7 +108,7 @@ void main() {
     Set<String> favorites = const {},
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final storage = LocalStorageService(prefs, tempCacheDir);
+    final storage = LocalStorageService(prefs);
     final apiClient = FakeWeaoApiClient(exploits);
     final repository = WeaoRepository(apiClient, storage);
 
@@ -123,7 +128,8 @@ void main() {
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(await buildApp());
-    await pumpUntil(tester, find.text(AppStrings.filterFavorites));
+    // Wait for the data to load and Shimmer (infinite animation) to disappear.
+    await pumpUntil(tester, find.byType(ExploitCard));
 
     expect(find.text(AppStrings.tabExploits), findsWidgets);
     expect(find.text(AppStrings.filterFreeOnly), findsOneWidget);
