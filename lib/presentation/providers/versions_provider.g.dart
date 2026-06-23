@@ -101,4 +101,4 @@ final class VersionsProvider
   }
 }
 
-String _$versionsHash() => r'42341febe95bd7e8a17f4d5bc588dce4f8fde982';
+String _$versionsHash() => r'becaf806bdcb61baf7df82629408c8143336fb06';

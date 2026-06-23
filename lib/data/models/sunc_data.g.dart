@@ -52,6 +52,6 @@ Map<String, dynamic> _$SuncDataToJson(_SuncData instance) => <String, dynamic>{
   'executor': instance.executor,
   'outdated': instance.outdated,
   'bibip': instance.bibip,
-  'passed': instance.passed,
-  'failed': instance.failed,
+  'passed': instance.passed.map((e) => e.toJson()).toList(),
+  'failed': instance.failed.map((e) => e.toJson()).toList(),
 };

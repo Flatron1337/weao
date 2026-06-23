@@ -126,7 +126,7 @@ void main() {
     await pumpUntil(tester, find.text(AppStrings.filterFavorites));
 
     expect(find.text(AppStrings.tabExploits), findsWidgets);
-    expect(find.text(AppStrings.filterAll), findsOneWidget);
+    expect(find.text(AppStrings.filterFreeOnly), findsOneWidget);
     expect(find.text(AppStrings.filterFavorites), findsOneWidget);
   });
 }
