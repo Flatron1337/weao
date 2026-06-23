@@ -1,18 +1,25 @@
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:weao/l10n/generated/app_localizations.dart';
 
-import 'core/l10n/app_strings.dart';
 import 'core/theme/app_theme.dart';
 import 'data/models/exploit.dart';
+import 'presentation/providers/settings_provider.dart';
 import 'presentation/screens/exploits/exploit_detail_screen.dart';
 import 'presentation/screens/exploits/exploits_screen.dart';
+import 'presentation/screens/settings/settings_screen.dart';
 import 'presentation/screens/shell/main_shell.dart';
 import 'presentation/screens/versions/versions_screen.dart';
 
+part 'app.g.dart';
+
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
-final routerProvider = Provider<GoRouter>((ref) {
+@Riverpod(keepAlive: true)
+GoRouter router(Ref ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/exploits',
@@ -38,6 +45,14 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
+          ),
         ],
       ),
       GoRoute(
@@ -45,9 +60,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) {
           final name = Uri.decodeComponent(state.pathParameters['name']!);
-          // When navigating from the list, the full Exploit is passed via
-          // `extra` so the detail screen avoids an extra network call. Deep
-          // links (no extra) fall back to fetching by name.
           final exploit = state.extra;
           return ExploitDetailScreen(
             exploitName: name,
@@ -57,7 +69,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
-});
+}
 
 class WeaoApp extends ConsumerWidget {
   const WeaoApp({super.key});
@@ -65,14 +77,22 @@ class WeaoApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final settings = ref.watch(settingsProvider);
 
-    return MaterialApp.router(
-      title: AppStrings.appTitle,
-      theme: AppTheme.dark,
-      darkTheme: AppTheme.dark,
-      themeMode: ThemeMode.dark,
-      routerConfig: router,
-      debugShowCheckedModeBanner: false,
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        return MaterialApp.router(
+          onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+          theme: AppTheme.light(lightDynamic),
+          darkTheme: AppTheme.dark(darkDynamic),
+          themeMode: settings.themeMode,
+          locale: settings.locale,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

@@ -25,8 +25,9 @@ class VersionsScreen extends ConsumerWidget {
           title: const Text(AppStrings.robloxVersions),
           bottom: TabBar(
             onTap: (index) {
-              ref.read(versionChannelProvider.notifier).state =
-                  VersionChannel.values[index];
+              ref
+                  .read(versionChannelProvider.notifier)
+                  .setChannel(VersionChannel.values[index]);
             },
             tabs: const [
               Tab(text: AppStrings.versionsCurrent),
@@ -42,8 +43,9 @@ class VersionsScreen extends ConsumerWidget {
             onRetry: () => ref.invalidate(versionsProvider),
           ),
           data: (result) {
-            final platforms =
-                result.data.platforms.where((p) => p.hasData).toList();
+            final platforms = result.data.platforms
+                .where((p) => p.hasData)
+                .toList();
 
             if (platforms.isEmpty) {
               return const Center(

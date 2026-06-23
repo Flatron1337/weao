@@ -18,10 +18,7 @@ class WeaoRepository {
     try {
       final data = await _client.getJsonList('/api/status/exploits');
       await _storage.saveJsonCache(_exploitsCacheFile, data);
-      return CachedResult(
-        data: _parseExploits(data),
-        cachedAt: DateTime.now(),
-      );
+      return CachedResult(data: _parseExploits(data), cachedAt: DateTime.now());
     } catch (e) {
       final cached = await _storage.loadJsonCache(_exploitsCacheFile);
       if (cached != null && cached.data is List) {
@@ -42,8 +39,7 @@ class WeaoRepository {
   Future<CachedResult<Exploit>> getExploit(String name) async {
     final cacheFile = 'exploit_$name.json';
     try {
-      final data =
-          await _client.getJsonObject('/api/status/exploits/$name');
+      final data = await _client.getJsonObject('/api/status/exploits/$name');
       await _storage.saveJsonCache(cacheFile, data);
       return CachedResult(
         data: Exploit.fromJson(data),
@@ -53,9 +49,7 @@ class WeaoRepository {
       final cached = await _storage.loadJsonCache(cacheFile);
       if (cached != null && cached.data is Map) {
         return CachedResult(
-          data: Exploit.fromJson(
-            Map<String, dynamic>.from(cached.data as Map),
-          ),
+          data: Exploit.fromJson(Map<String, dynamic>.from(cached.data as Map)),
           isStale: true,
           cachedAt: cached.cachedAt,
           error: e,
@@ -144,12 +138,14 @@ class WeaoRepository {
         parsed.add(Exploit.fromJson(Map<String, dynamic>.from(item)));
       } catch (e, st) {
         // Skip malformed entries instead of failing the whole list.
-        AppLogger.warning('Failed to parse exploit entry', error: e, stackTrace: st);
+        AppLogger.warning(
+          'Failed to parse exploit entry',
+          error: e,
+          stackTrace: st,
+        );
       }
     }
-    return parsed
-        .where((e) => !e.hidden)
-        .toList()
+    return parsed.where((e) => !e.hidden).toList()
       ..sort((a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()));
   }
 }

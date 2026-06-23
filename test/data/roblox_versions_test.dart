@@ -38,12 +38,18 @@ void main() {
       });
 
       expect(versions.platforms.length, 4);
-      expect(versions.platforms.map((p) => p.platform),
-          containsAll(['Windows', 'Mac', 'Android', 'iOS']));
-      expect(versions.platforms.firstWhere((p) => p.platform == 'Windows').version,
-          'v642');
-      expect(versions.platforms.firstWhere((p) => p.platform == 'iOS').date,
-          '2025-06-12');
+      expect(
+        versions.platforms.map((p) => p.platform),
+        containsAll(['Windows', 'Mac', 'Android', 'iOS']),
+      );
+      expect(
+        versions.platforms.firstWhere((p) => p.platform == 'Windows').version,
+        'v642',
+      );
+      expect(
+        versions.platforms.firstWhere((p) => p.platform == 'iOS').date,
+        '2025-06-12',
+      );
     });
 
     test('skips platforms with empty version', () {
@@ -57,8 +63,9 @@ void main() {
 
       // Only Windows and iOS remain: Windows explicit, iOS defaulted to '—'.
       expect(versions.platforms.length, 2);
-      final windows =
-          versions.platforms.firstWhere((p) => p.platform == 'Windows');
+      final windows = versions.platforms.firstWhere(
+        (p) => p.platform == 'Windows',
+      );
       expect(windows.version, 'v642');
       final ios = versions.platforms.firstWhere((p) => p.platform == 'iOS');
       expect(ios.version, '—');
@@ -66,13 +73,16 @@ void main() {
       expect(ios.hasData, isFalse);
     });
 
-    test('handles all-absent input (defaults to dash, all non-empty strings)', () {
-      final versions = RobloxVersions.fromJson(<String, dynamic>{});
-      // All four keys default to '—' which is non-empty, so all are added,
-      // but none carry real data per hasData.
-      expect(versions.platforms.length, 4);
-      expect(versions.platforms.every((p) => !p.hasData), isTrue);
-    });
+    test(
+      'handles all-absent input (defaults to dash, all non-empty strings)',
+      () {
+        final versions = RobloxVersions.fromJson(<String, dynamic>{});
+        // All four keys default to '—' which is non-empty, so all are added,
+        // but none carry real data per hasData.
+        expect(versions.platforms.length, 4);
+        expect(versions.platforms.every((p) => !p.hasData), isTrue);
+      },
+    );
 
     test('uses dash default for missing dates', () {
       final versions = RobloxVersions.fromJson(<String, dynamic>{
@@ -81,8 +91,7 @@ void main() {
       });
 
       // Only Windows has real version data.
-      final withData =
-          versions.platforms.where((p) => p.hasData).toList();
+      final withData = versions.platforms.where((p) => p.hasData).toList();
       expect(withData.length, 1);
       expect(withData.single.platform, 'Windows');
       expect(withData.single.version, 'v642');

@@ -34,9 +34,9 @@ class StaleDataBanner extends StatelessWidget {
             Expanded(
               child: Text(
                 AppStrings.cachedDataBanner(_formatDate(cachedAt)),
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.amber.shade100,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.amber.shade100),
               ),
             ),
           ],

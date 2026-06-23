@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 import '../errors/weao_exception.dart';
 import '../l10n/app_strings.dart';
@@ -6,25 +7,36 @@ import '../utils/app_logger.dart';
 
 /// Base URL of the WEAO API. Override at build time with
 /// `--dart-define=WEAO_API_BASE_URL=https://...`.
-const _apiBaseUrl =
-    String.fromEnvironment('WEAO_API_BASE_URL', defaultValue: 'https://weao.xyz');
+const _apiBaseUrl = String.fromEnvironment(
+  'WEAO_API_BASE_URL',
+  defaultValue: 'https://weao.xyz',
+);
 
 /// User-Agent sent to the WEAO API. Override at build time with
 /// `--dart-define=WEAO_USER_AGENT=...`.
-const _apiUserAgent =
-    String.fromEnvironment('WEAO_USER_AGENT', defaultValue: 'WEAO-3PService');
+const _apiUserAgent = String.fromEnvironment(
+  'WEAO_USER_AGENT',
+  defaultValue: 'WEAO-3PService',
+);
 
 class WeaoApiClient {
   WeaoApiClient({Dio? dio})
-      : _dio = dio ??
-            Dio(
-              BaseOptions(
-                baseUrl: _apiBaseUrl,
-                connectTimeout: const Duration(seconds: 15),
-                receiveTimeout: const Duration(seconds: 15),
-                headers: const {'User-Agent': _apiUserAgent},
-              ),
-            );
+    : _dio =
+          dio ??
+          Dio(
+            BaseOptions(
+              baseUrl: _apiBaseUrl,
+              connectTimeout: const Duration(seconds: 15),
+              receiveTimeout: const Duration(seconds: 15),
+              headers: const {'User-Agent': _apiUserAgent},
+            ),
+          ) {
+    if (dio == null) {
+      _dio.interceptors.add(
+        PrettyDioLogger(requestHeader: true, requestBody: true),
+      );
+    }
+  }
 
   final Dio _dio;
 
@@ -35,9 +47,7 @@ class WeaoApiClient {
   }) async {
     final data = await getRaw(path, queryParameters: queryParameters);
     if (data is! Map<String, dynamic>) {
-      throw WeaoException(
-        'Invalid response: expected JSON object',
-      );
+      throw WeaoException('Invalid response: expected JSON object');
     }
     return data;
   }
@@ -49,9 +59,7 @@ class WeaoApiClient {
   }) async {
     final data = await getRaw(path, queryParameters: queryParameters);
     if (data is! List) {
-      throw WeaoException(
-        'Invalid response: expected JSON array',
-      );
+      throw WeaoException('Invalid response: expected JSON array');
     }
     return data;
   }
@@ -69,8 +77,11 @@ class WeaoApiClient {
       );
       return response.data;
     } on DioException catch (e, st) {
-      AppLogger.warning('Dio request failed: ${e.requestOptions.path}',
-          error: e, stackTrace: st);
+      AppLogger.warning(
+        'Dio request failed: ${e.requestOptions.path}',
+        error: e,
+        stackTrace: st,
+      );
       throw _mapException(e);
     }
   }

@@ -1,16 +1,25 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/models/cached_result.dart';
 import '../../data/models/roblox_versions.dart';
 import 'repository_provider.dart';
 
+part 'versions_provider.g.dart';
+
 enum VersionChannel { current, future, past }
 
-final versionChannelProvider =
-    StateProvider<VersionChannel>((ref) => VersionChannel.current);
+@riverpod
+class VersionChannelNotifier extends _$VersionChannelNotifier {
+  @override
+  VersionChannel build() => VersionChannel.current;
 
-final versionsProvider =
-    FutureProvider<CachedResult<RobloxVersions>>((ref) async {
+  void setChannel(VersionChannel channel) {
+    state = channel;
+  }
+}
+
+@riverpod
+Future<CachedResult<RobloxVersions>> versions(Ref ref) async {
   final repository = ref.watch(weaoRepositoryProvider);
   final channel = ref.watch(versionChannelProvider);
 
@@ -22,4 +31,4 @@ final versionsProvider =
     case VersionChannel.past:
       return repository.getPastVersions();
   }
-});
+}

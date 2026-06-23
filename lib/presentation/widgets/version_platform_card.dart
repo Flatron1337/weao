@@ -19,7 +19,10 @@ class VersionPlatformCard extends StatelessWidget {
   static ({IconData icon, String label}) _platformMeta(String key) {
     switch (key) {
       case 'Windows':
-        return (icon: Icons.desktop_windows_outlined, label: AppStrings.windows);
+        return (
+          icon: Icons.desktop_windows_outlined,
+          label: AppStrings.windows,
+        );
       case 'Mac':
         return (icon: Icons.laptop_mac_outlined, label: AppStrings.mac);
       case 'Android':
@@ -50,7 +53,9 @@ class VersionPlatformCard extends StatelessWidget {
               height: AppDimens.platformIconSize,
               decoration: BoxDecoration(
                 color: primaryColor.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(AppDimens.platformIconRadius),
+                borderRadius: BorderRadius.circular(
+                  AppDimens.platformIconRadius,
+                ),
               ),
               child: Icon(meta.icon, color: primaryColor),
             ),
@@ -62,22 +67,22 @@ class VersionPlatformCard extends StatelessWidget {
                   Text(
                     meta.label,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: AppDimens.spacingSm),
                   Text(
                     version,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(fontFamily: 'monospace'),
                   ),
                   const SizedBox(height: AppDimens.spacingXs),
                   Text(
                     date,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white38,
-                        ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: Colors.white38),
                   ),
                 ],
               ),

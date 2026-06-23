@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 abstract final class AppTheme {
   static const _seedColor = Color(0xFF7C3AED);
 
-  static ThemeData get dark {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: _seedColor,
-      brightness: Brightness.dark,
-      surface: const Color(0xFF12121A),
-    );
+  static ThemeData dark([ColorScheme? dynamicColor]) {
+    final colorScheme =
+        dynamicColor ??
+        ColorScheme.fromSeed(
+          seedColor: _seedColor,
+          brightness: Brightness.dark,
+          surface: const Color(0xFF12121A),
+        );
 
     return ThemeData(
       useMaterial3: true,
@@ -37,7 +39,10 @@ abstract final class AppTheme {
           borderSide: BorderSide.none,
         ),
         hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.4)),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
       ),
       chipTheme: ChipThemeData(
         backgroundColor: const Color(0xFF252535),
@@ -55,6 +60,39 @@ abstract final class AppTheme {
             color: selected ? _seedColor : Colors.white54,
           );
         }),
+      ),
+    );
+  }
+
+  static ThemeData light([ColorScheme? dynamicColor]) {
+    final colorScheme =
+        dynamicColor ?? ColorScheme.fromSeed(seedColor: _seedColor);
+
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: colorScheme,
+      cardTheme: CardThemeData(
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+        ),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: Colors.grey.withValues(alpha: 0.1),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

@@ -1,21 +1,28 @@
-class PlatformVersion {
-  const PlatformVersion({
-    required this.platform,
-    required this.version,
-    required this.date,
-  });
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  final String platform;
-  final String version;
-  final String date;
+part 'roblox_versions.freezed.dart';
+part 'roblox_versions.g.dart';
+
+@freezed
+abstract class PlatformVersion with _$PlatformVersion {
+  const factory PlatformVersion({
+    required String platform,
+    required String version,
+    required String date,
+  }) = _PlatformVersion;
+  const PlatformVersion._();
 
   bool get hasData => version.isNotEmpty && version != '—';
+
+  factory PlatformVersion.fromJson(Map<String, Object?> json) =>
+      _$PlatformVersionFromJson(json);
 }
 
-class RobloxVersions {
-  const RobloxVersions({required this.platforms});
-
-  final List<PlatformVersion> platforms;
+@freezed
+abstract class RobloxVersions with _$RobloxVersions {
+  const factory RobloxVersions({required List<PlatformVersion> platforms}) =
+      _RobloxVersions;
+  const RobloxVersions._();
 
   factory RobloxVersions.fromJson(Map<String, dynamic> json) {
     final platforms = <PlatformVersion>[];

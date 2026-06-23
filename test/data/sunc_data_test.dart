@@ -78,7 +78,10 @@ void main() {
       final data = SuncData.fromJson(fullJson);
 
       expect(data.allTests.length, 2);
-      expect(data.allTests.map((t) => t.name), containsAll(['test_a', 'test_b']));
+      expect(
+        data.allTests.map((t) => t.name),
+        containsAll(['test_a', 'test_b']),
+      );
     });
 
     test('fromJson handles missing tests block', () {

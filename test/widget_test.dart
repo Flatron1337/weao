@@ -21,24 +21,25 @@ class FakeWeaoApiClient extends WeaoApiClient {
   final List<Exploit> _exploits;
 
   Map<String, dynamic> _exploitToMap(Exploit e) => <String, dynamic>{
-        '_id': e.id,
-        'title': e.title,
-        'version': e.version,
-        'updatedDate': e.updatedDate,
-        'uncStatus': e.uncStatus,
-        'free': e.free,
-        'detected': e.detected,
-        'rbxversion': e.rbxversion,
-        'updateStatus': e.updateStatus,
-      };
+    '_id': e.id,
+    'title': e.title,
+    'version': e.version,
+    'updatedDate': e.updatedDate,
+    'uncStatus': e.uncStatus,
+    'free': e.free,
+    'detected': e.detected,
+    'rbxversion': e.rbxversion,
+    'updateStatus': e.updateStatus,
+  };
 
   @override
   Future<Map<String, dynamic>> getJsonObject(
     String path, {
     Map<String, dynamic>? queryParameters,
   }) async {
-    final match =
-        _exploits.where((e) => e.title == path.split('/').last).firstOrNull;
+    final match = _exploits
+        .where((e) => e.title == path.split('/').last)
+        .firstOrNull;
     if (match != null) return _exploitToMap(match);
     throw Exception('Not found');
   }
@@ -59,7 +60,6 @@ const _testExploit = Exploit(
   updatedDate: '2025-01-01',
   uncStatus: true,
   free: true,
-  detected: false,
   rbxversion: 'v123',
   updateStatus: true,
 );
@@ -119,7 +119,9 @@ void main() {
     );
   }
 
-  testWidgets('App renders exploits tab with filter labels', (WidgetTester tester) async {
+  testWidgets('App renders exploits tab with filter labels', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(await buildApp());
     await pumpUntil(tester, find.text(AppStrings.filterFavorites));
 

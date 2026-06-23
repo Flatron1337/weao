@@ -49,3 +49,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Environment variables
+.env
+.env.*
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Generated code (uncomment if you don't want to commit generated files)
+# *.g.dart
+# *.freezed.dart

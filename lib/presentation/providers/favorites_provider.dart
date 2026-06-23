@@ -1,27 +1,25 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import '../../data/local/local_storage_service.dart';
 import 'repository_provider.dart';
 
-/// Seed of favorites loaded synchronously in `main()` before `runApp`.
-/// Overridden there so the notifier starts with the real set instead of
-/// loading asynchronously and causing a UI flicker.
-final favoritesSeedProvider = Provider<Set<String>>((ref) {
-  throw UnimplementedError('favoritesSeedProvider must be overridden in main()');
-});
+part 'favorites_provider.g.dart';
 
-final favoritesProvider =
-    StateNotifierProvider<FavoritesNotifier, Set<String>>((ref) {
-  return FavoritesNotifier(
-    ref.watch(localStorageServiceProvider),
-    ref.watch(favoritesSeedProvider),
+@Riverpod(keepAlive: true)
+Set<String> favoritesSeed(Ref ref) {
+  throw UnimplementedError(
+    'favoritesSeedProvider must be overridden in main()',
   );
-});
+}
 
-class FavoritesNotifier extends StateNotifier<Set<String>> {
-  FavoritesNotifier(this._storage, Set<String> seed) : super(seed);
+@Riverpod(keepAlive: true)
+class Favorites extends _$Favorites {
+  @override
+  Set<String> build() {
+    return ref.watch(favoritesSeedProvider);
+  }
 
-  final LocalStorageService _storage;
+  LocalStorageService get _storage => ref.read(localStorageServiceProvider);
 
   bool isFavorite(String title) => state.contains(title);
 

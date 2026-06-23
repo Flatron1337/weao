@@ -35,16 +35,22 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   dio: ^5.8.0+1
-  # Riverpod 2.x: a 3.x major bump is available but removes StateNotifier,
-  # which FavoritesNotifier relies on. Deferred until the notifier is migrated
-  # to the new Notifier API. See CHANGELOG.md "Roadmap".
-  flutter_riverpod: ^2.6.1
   # go_router 14.x: 15-17 are available with breaking API changes. Deferred
   # to avoid churning working navigation. See CHANGELOG.md "Roadmap".
-  go_router: ^14.8.1
+  go_router: ^17.3.0
+  flutter_riverpod: ^3.3.2
   url_launcher: ^6.3.1
   shared_preferences: ^2.5.3
   path_provider: ^2.1.6
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
+  riverpod_annotation: ^4.0.3
+  pretty_dio_logger: ^1.4.0
+  shimmer: ^3.0.0
+  dynamic_color: ^1.8.1
+  intl: ^0.20.2
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -56,12 +62,17 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  freezed: ^3.2.5
+  riverpod_generator: ^4.0.3
+  json_serializable: ^6.14.0
+  build_runner: ^2.15.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
 flutter:
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

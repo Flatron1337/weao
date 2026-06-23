@@ -37,10 +37,7 @@ Future<WeaoRepository> _buildRepository(
   // SharedPreferences is mocked per-call; only the cache directory matters
   // for these tests.
   final prefs = await SharedPreferences.getInstance();
-  return WeaoRepository(
-    client,
-    LocalStorageService(prefs, cacheDir),
-  );
+  return WeaoRepository(client, LocalStorageService(prefs, cacheDir));
 }
 
 void main() {
@@ -113,7 +110,10 @@ void main() {
       final result = await repository.getExploits();
 
       expect(result.data.length, 2);
-      expect(result.data.map((e) => e.title), containsAll(['Good', 'AlsoGood']));
+      expect(
+        result.data.map((e) => e.title),
+        containsAll(['Good', 'AlsoGood']),
+      );
     });
 
     test('falls back to cache and marks stale on error', () async {
@@ -138,10 +138,7 @@ void main() {
       client = FakeWeaoApiClient(shouldThrow: true);
       repository = await _buildRepository(client, tempDir);
 
-      expect(
-        () => repository.getExploits(),
-        throwsA(isA<WeaoException>()),
-      );
+      expect(() => repository.getExploits(), throwsA(isA<WeaoException>()));
     });
   });
 }

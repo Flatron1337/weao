@@ -49,9 +49,9 @@ class _SuncTestsSectionState extends ConsumerState<SuncTestsSection> {
             Text(
               AppStrings.suncTests,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 12),
             suncAsync.when(
@@ -61,7 +61,9 @@ class _SuncTestsSectionState extends ConsumerState<SuncTestsSection> {
                 onRetry: () => ref.invalidate(suncDataProvider(request)),
               ),
               data: (result) {
-                if (result == null) return const _UnavailableSection(compact: true);
+                if (result == null) {
+                  return const _UnavailableSection(compact: true);
+                }
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,10 +96,7 @@ class _SuncTestsSectionState extends ConsumerState<SuncTestsSection> {
                       },
                     ),
                     const SizedBox(height: 12),
-                    _TestsList(
-                      data: result.data,
-                      filter: _filter,
-                    ),
+                    _TestsList(data: result.data, filter: _filter),
                   ],
                 );
               },
@@ -124,9 +123,9 @@ class _UnavailableSection extends StatelessWidget {
     if (compact) {
       return Text(
         AppStrings.suncUnavailable,
-        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white54,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: Colors.white54),
       );
     }
 
@@ -139,16 +138,16 @@ class _UnavailableSection extends StatelessWidget {
             Text(
               AppStrings.suncTests,
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.primary,
+              ),
             ),
             const SizedBox(height: 8),
             Text(
               AppStrings.suncUnavailable,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white54,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.white54),
             ),
           ],
         ),
@@ -175,15 +174,15 @@ class _SummaryRow extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           '${AppStrings.version}: ${data.version}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white54,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.white54),
         ),
         Text(
           '${AppStrings.suncTimeTaken}: ${data.timeTaken.toStringAsFixed(1)} сек.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white54,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.white54),
         ),
         if (data.outdated)
           Padding(
@@ -225,9 +224,9 @@ class _TestsList extends StatelessWidget {
     if (tests.isEmpty) {
       return Text(
         AppStrings.noResults,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white54,
-            ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: Colors.white54),
       );
     }
 
@@ -241,10 +240,7 @@ class _TestsList extends StatelessWidget {
     return Column(
       children: [
         for (final library in libraries)
-          _LibraryExpansionTile(
-            library: library,
-            tests: grouped[library]!,
-          ),
+          _LibraryExpansionTile(library: library, tests: grouped[library]!),
       ],
     );
   }
