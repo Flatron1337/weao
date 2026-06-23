@@ -1,18 +1,15 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_ce/hive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:weao/app.dart';
 import 'package:weao/core/api/weao_api_client.dart';
 import 'package:weao/core/l10n/app_strings.dart';
-import 'package:weao/data/database/hive_service.dart';
 import 'package:weao/data/local/local_storage_service.dart';
 import 'package:weao/data/models/exploit.dart';
 import 'package:weao/data/repositories/weao_repository.dart';
+import 'package:weao/presentation/providers/exploits_provider.dart';
 import 'package:weao/presentation/providers/favorites_provider.dart';
 import 'package:weao/presentation/providers/repository_provider.dart';
 import 'package:weao/presentation/widgets/exploit_card.dart';
@@ -56,6 +53,50 @@ class FakeWeaoApiClient extends WeaoApiClient {
   }
 }
 
+class FakeLocalStorageService implements LocalStorageService {
+  final Map<String, StoredCache> _cache = {};
+
+  @override
+  Future<Set<String>> loadFavorites() async => {};
+
+  @override
+  Future<void> saveFavorites(Set<String> titles) async {}
+
+  @override
+  String? getThemeMode() => null;
+
+  @override
+  Future<void> setThemeMode(String mode) async {}
+
+  @override
+  String? getLocale() => null;
+
+  @override
+  Future<void> setLocale(String languageCode) async {}
+
+  @override
+  Future<void> clearLocale() async {}
+
+  @override
+  ExploitFilters getFilters() => const ExploitFilters();
+
+  @override
+  Future<void> saveFilters(ExploitFilters filters) async {}
+
+  @override
+  Future<void> clearAllCache() async => _cache.clear();
+
+  @override
+  Future<void> saveJsonCache(String fileName, dynamic data) async {
+    _cache[fileName] = StoredCache(data: data, cachedAt: DateTime.now());
+  }
+
+  @override
+  Future<StoredCache?> loadJsonCache(String fileName) async {
+    return _cache[fileName];
+  }
+}
+
 const _testExploit = Exploit(
   id: '1',
   title: 'TestExploit',
@@ -70,21 +111,8 @@ const _testExploit = Exploit(
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  late Directory tempCacheDir;
-
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    tempCacheDir = await Directory.systemTemp.createTemp('weao_widget_test_');
-    await HiveService.init(tempCacheDir.path);
-  });
-
-  tearDown(() async {
-    try {
-      await Hive.close();
-      if (tempCacheDir.existsSync()) {
-        await tempCacheDir.delete(recursive: true);
-      }
-    } catch (_) {}
   });
 
   /// Pumps frames until [finder] resolves or a frame budget is exhausted.
@@ -108,7 +136,7 @@ void main() {
     Set<String> favorites = const {},
   }) async {
     final prefs = await SharedPreferences.getInstance();
-    final storage = LocalStorageService(prefs);
+    final storage = FakeLocalStorageService();
     final apiClient = FakeWeaoApiClient(exploits);
     final repository = WeaoRepository(apiClient, storage);
 
