@@ -130,6 +130,8 @@ void main() {
     await tester.pumpWidget(await buildApp());
     // Wait for the data to load and Shimmer (infinite animation) to disappear.
     await pumpUntil(tester, find.byType(ExploitCard));
+    // Settle the entry animations (fade/slide) of the ExploitCards safely without pumpAndSettle.
+    await tester.pump(const Duration(seconds: 1));
 
     expect(find.text(AppStrings.tabExploits), findsWidgets);
     expect(find.text(AppStrings.filterFreeOnly), findsOneWidget);
